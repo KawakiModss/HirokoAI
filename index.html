@@ -2768,10 +2768,10 @@ function startOnboardingComplete() {
 
 // ========== GOOGLE OAUTH REAL ==========
 const GOOGLE_CLIENT_ID = "205977709770-3d0am349pfuhpv45soo1qt5o6h7cbofk.apps.googleusercontent.com";
-const REDIRECT_URI = "https://everfallnet.my.id/auth/google/callback";
+const REDIRECT_URI = "https://play.everfallnet.my.id/auth/google/callback";
 const GOOGLE_AUTH_URL = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=profile email&access_type=offline&prompt=consent`;
-const DEFAULT_KEY = "AIzaSyCS9MyD92K_3O1CTSYwbZYm0Sc2yv5GKlE";
-const DEFAULT_KEY2 = "AIzaSyAgUu816F3ozV66yrydovMAmmligD-rFJU";
+const DEFAULT_KEY = "AIzaSyCo_2NhSfzLZLK1PM2Bcr2XHGUBcrGFCZk";
+const DEFAULT_KEY2 = "AIzaSyB3MU7rtO04cCf2-XaTojEANBFR33pDCh4";
 const DEEPSEEK_KEY = "sk-61792d83a3b644bcb21a2e2185c7419b";
 const GROQ_KEY = "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";
 const _k = 42;
@@ -2782,7 +2782,7 @@ const FREE_LIMIT = 40;
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 const GROQ_BASE = "https://api.groq.com/openai/v1/chat/completions";
 const MODELS = {
-  normal: { api: "groq", models: ["llama-3.3-70b-versatile", "llama3-8b-8192"] },
+  normal: { api: "deepseek", models: ["deepseek-chat"] },
   faster: { api: "gemini", models: ["gemini-2.5-flash", "gemini-2.5-flash-lite"] },
   code: { api: "gemini", models: ["gemini-2.5-flash", "gemini-2.5-flash-lite"] },
   math: { api: "gemini", models: ["gemini-2.5-flash", "gemini-2.5-flash-lite"] }
