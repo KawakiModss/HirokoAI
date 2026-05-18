@@ -2678,93 +2678,122 @@ function getRandomJailbreakResponse() {
   return JAILBREAK_RESPONSES[randomIndex].content;
 }
 
-// ========== ONBOARDING WELCOME PAGE ==========
-let isOnboardingActive = false;
-let typingInterval = null;
-
-function showOnboardingWelcome(username) {
-  // Sembunyikan auth overlay, sidebar, main chat
-  document.getElementById("auth-overlay").style.display = "none";
-  document.getElementById("sidebar").style.display = "none";
-  document.getElementById("main").style.display = "none";
-  
-  const onboardingEl = document.getElementById("welcome-onboarding");
-  onboardingEl.style.display = "flex";
-  isOnboardingActive = true;
-  
-  const messages = [
-    `Halo ${username || 'Teman'}! 👋`,
-    `Senang berkenalan denganmu.`,
-    `Aku HIROKO, asisten AI yang di buat oleh kawaki.`,
-    `Siap membantu kapan saja 24/7.`,
-    `Ada yang bisa saya bantu hari ini?`
-  ];
-  
-  let msgIndex = 0;
-  let charIndex = 0;
-  const typingTextEl = document.getElementById("typing-text");
-  const cursorEl = document.getElementById("typing-cursor");
-  const subMsgEl = document.getElementById("welcome-sub-message");
-  const startBtn = document.getElementById("onboarding-start-btn");
-  
-  function typeNextMessage() {
-    if (msgIndex >= messages.length) {
-      // Selesai semua pesan
-      if (typingInterval) clearInterval(typingInterval);
-      cursorEl.style.display = "none";
-      // Munculkan sub message dan tombol dengan animasi
-      subMsgEl.style.opacity = "1";
-      startBtn.style.opacity = "1";
-      startBtn.style.transform = "translateY(0)";
-      return;
+// Override showOnboardingWelcome biar lebih kenceng
+window.showOnboardingWelcome = function(username) {
+    // Paksa sembunyikan auth overlay, sidebar, main
+    const authOverlay = document.getElementById("auth-overlay");
+    const sidebar = document.getElementById("sidebar");
+    const main = document.getElementById("main");
+    const chat = document.getElementById("chat");
+    
+    if (authOverlay) authOverlay.style.display = "none";
+    if (sidebar) sidebar.style.display = "none";
+    if (main) main.style.display = "none";
+    if (chat) chat.style.display = "none";
+    
+    const onboardingEl = document.getElementById("welcome-onboarding");
+    if (!onboardingEl) {
+        // Bikin ulang kalo gak ada
+        const container = document.createElement("div");
+        container.id = "welcome-onboarding";
+        container.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            animation: fadeIn 0.5s ease;
+        `;
+        container.innerHTML = `
+            <div style="max-width: 400px; width: 100%;">
+                <div style="margin-bottom: 32px;">
+                    <div style="width: 80px; height: 80px; background: #e8f0e8; border-radius: 24px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                </div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 16px; min-height: 80px;">
+                    <span id="typing-text"></span>
+                    <span id="typing-cursor" style="display: inline-block; width: 2px; height: 28px; background: #2d6a4f; margin-left: 2px; animation: blink 1s step-end infinite;"></span>
+                </div>
+                <p id="welcome-sub-message" style="color: #6b6b6b; font-size: 14px; line-height: 1.6; margin-bottom: 32px; opacity: 0; transition: opacity 0.5s;">
+                    Siap membantu kapan saja 24/7. Ada yang bisa saya bantu hari ini?
+                </p>
+                <button id="onboarding-start-btn" style="background: #2d6a4f; color: white; border: none; border-radius: 40px; padding: 14px 32px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; opacity: 0; transform: translateY(20px); box-shadow: 0 4px 14px rgba(45,106,79,0.3);">
+                    🚀 Mulai Percakapan
+                </button>
+            </div>
+        `;
+        document.body.appendChild(container);
     }
     
-    const currentMsg = messages[msgIndex];
-    if (charIndex < currentMsg.length) {
-      typingTextEl.textContent += currentMsg.charAt(charIndex);
-      charIndex++;
-    } else {
-      // Pindah ke pesan berikutnya setelah jeda
-      msgIndex++;
-      charIndex = 0;
-      if (msgIndex < messages.length) {
-        typingTextEl.textContent = "";
-        // Delay sebentar sebelum ngetik pesan baru
-        setTimeout(() => {}, 300);
-      } else {
-        // Selesai, panggil lagi untuk trigger finish
-        typeNextMessage();
-      }
+    const finalOnboarding = document.getElementById("welcome-onboarding");
+    finalOnboarding.style.display = "flex";
+    
+    const messages = [
+        `Halo ${username || 'Teman'}! 👋`,
+        `Senang berkenalan denganmu.`,
+        `Aku HIROKO, asisten AI yang dibuat oleh KawakiModss.`,
+        `Siap membantu kapan saja 24/7.`,
+        `Ada yang bisa saya bantu hari ini?`
+    ];
+    
+    let msgIndex = 0;
+    let charIndex = 0;
+    const typingTextEl = document.getElementById("typing-text");
+    const cursorEl = document.getElementById("typing-cursor");
+    const subMsgEl = document.getElementById("welcome-sub-message");
+    const startBtn = document.getElementById("onboarding-start-btn");
+    
+    if (typingTextEl) typingTextEl.textContent = "";
+    msgIndex = 0;
+    charIndex = 0;
+    
+    if (window.typingInterval) clearInterval(window.typingInterval);
+    
+    window.typingInterval = setInterval(() => {
+        if (msgIndex >= messages.length) {
+            clearInterval(window.typingInterval);
+            if (cursorEl) cursorEl.style.display = "none";
+            if (subMsgEl) subMsgEl.style.opacity = "1";
+            if (startBtn) {
+                startBtn.style.opacity = "1";
+                startBtn.style.transform = "translateY(0)";
+            }
+            return;
+        }
+        
+        const currentMsg = messages[msgIndex];
+        if (charIndex < currentMsg.length) {
+            if (typingTextEl) typingTextEl.textContent += currentMsg.charAt(charIndex);
+            charIndex++;
+        } else {
+            msgIndex++;
+            charIndex = 0;
+            if (typingTextEl && msgIndex < messages.length) typingTextEl.textContent = "";
+        }
+    }, 70);
+    
+    // Event start
+    const startBtnEl = document.getElementById("onboarding-start-btn");
+    if (startBtnEl && !startBtnEl.hasClickHandler) {
+        startBtnEl.hasClickHandler = true;
+        startBtnEl.onclick = () => {
+            if (window.typingInterval) clearInterval(window.typingInterval);
+            finalOnboarding.style.display = "none";
+            document.getElementById("sidebar").style.display = "flex";
+            document.getElementById("main").style.display = "flex";
+            document.getElementById("chat").style.display = "flex";
+            
+            appendBubble("ai", "✨ **Halo! Senang bertemu denganmu!** ✨\n\nAku HIROKO, asisten AI buatan KawakiModss. Ada yang bisa aku bantu? 😊", currentMode);
+            showToast(`🎉 Selamat datang, ${username}! 🔥`, false);
+        };
     }
-  }
-  
-  // Start typing
-  typingTextEl.textContent = "";
-  msgIndex = 0;
-  charIndex = 0;
-  if (typingInterval) clearInterval(typingInterval);
-  typingInterval = setInterval(typeNextMessage, 70); // kecepatan ngetik
-}
-
-function startOnboardingComplete() {
-  // Matikan efek ngetik
-  if (typingInterval) clearInterval(typingInterval);
-  
-  // Sembunyikan onboarding
-  const onboardingEl = document.getElementById("welcome-onboarding");
-  onboardingEl.style.display = "none";
-  
-  // Tampilkan sidebar dan main
-  document.getElementById("sidebar").style.display = "flex";
-  document.getElementById("main").style.display = "flex";
-  
-  isOnboardingActive = false;
-  
-  // Tambahkan pesan sambutan di chat
-  appendBubble("ai", "✨ **Halo! Senang bertemu denganmu!** ✨\n\nAku HIROKO, asisten AI buatan KawakiModss. Ada yang bisa aku bantu? 😊", currentMode);
-  
-  showToast("Selamat datang di HIROKO! 🎉", false);
-}
+};
 
 // ========== GOOGLE OAUTH REAL ==========
 const GOOGLE_CLIENT_ID = "205977709770-3d0am349pfuhpv45soo1qt5o6h7cbofk.apps.googleusercontent.com";
@@ -7352,17 +7381,30 @@ function loadJailbreakLog() {
   `).join('');
 }
 
-// RENDER USER LIST - TEKS HITAM
+// ========== FIX 1: GANTI FUNGSI renderUserListBoard biar LANGSUNG MUNCUL ==========
 function renderUserListBoard() {
   const tbody = document.getElementById("user-list-tbody");
   if (!tbody) return;
   
-  if (users.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:#9ca3af;">No users registered</td></tr>';
+  // Ambil dari localStorage biar dapet data terbaru
+  let allUsers = [];
+  try {
+    const stored = localStorage.getItem("hiroko_users");
+    if (stored) {
+      allUsers = JSON.parse(stored);
+    } else {
+      allUsers = users || [];
+    }
+  } catch(e) {
+    allUsers = users || [];
+  }
+  
+  if (!allUsers || allUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:#9ca3af;">📭 No users registered</td></tr>';
     return;
   }
   
-  tbody.innerHTML = users.map(user => `
+  tbody.innerHTML = allUsers.map(user => `
     <tr style="border-bottom:1px solid #e5e5e5;">
       <td style="padding:8px; color:#1a1a1a; font-weight:600;">${escapeHtml(user.username)}</td>
       <td style="padding:8px; color:#1a1a1a;">${escapeHtml(user.name || '-')}</td>
@@ -7376,45 +7418,402 @@ function renderUserListBoard() {
       <td style="padding:8px; font-size:10px; color:#6b6b6b;">${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}</td>
     </tr>
   `).join('');
+  
+  // Update stat TOTAL USER
+  const totalUserDiv = document.querySelector('#system-board-modal .stats-total-users');
+  if (totalUserDiv) totalUserDiv.textContent = allUsers.length;
+  
+  // Update stat PREMIUM USER
+  const premiumCount = allUsers.filter(u => u.premium).length;
+  const premiumDiv = document.querySelector('#system-board-modal .stats-premium-users');
+  if (premiumDiv) premiumDiv.textContent = premiumCount;
+  
+  // Update stat ADMIN + OWNER
+  const adminCount = allUsers.filter(u => u.role === 'owner' || u.role === 'PartnerOwner').length;
+  const adminDiv = document.querySelector('#system-board-modal .stats-admin-users');
+  if (adminDiv) adminDiv.textContent = adminCount;
 }
 
-function closeSystemBoard() {
-  const modal = document.getElementById("system-board-modal");
-  if (modal) modal.remove();
+// ========== FIX 2: GANTI FUNGSI loadJailbreakLog biar LANGSUNG MUNCUL ==========
+function loadJailbreakLog() {
+  const tbody = document.getElementById("jailbreak-log-tbody");
+  if (!tbody) return;
+  
+  let logs = [];
+  try {
+    const stored = localStorage.getItem("jailbreak_logs");
+    if (stored) {
+      logs = JSON.parse(stored);
+    } else {
+      logs = jailbreakLogs || [];
+    }
+  } catch(e) {
+    logs = jailbreakLogs || [];
+  }
+  
+  if (!logs || logs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#9ca3af;">🔒 No jailbreak attempts recorded</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = logs.slice(0, 20).map(log => `
+    <tr style="border-bottom:1px solid #e5e5e5;">
+      <td style="padding:8px; color:#1a1a1a; font-weight:500;">${escapeHtml(log.username)}</td>
+      <td style="padding:8px; color:#1a1a1a;">${escapeHtml(log.email)}</td>
+      <td style="padding:8px;"><span style="background:#fee2e2; padding:2px 8px; border-radius:12px; font-size:10px; color:#dc2626; font-weight:500;">⚠️ ${escapeHtml(log.pattern)}</span></td>
+      <td style="padding:8px; font-size:10px; color:#6b6b6b;">${new Date(log.timestamp).toLocaleString()}</td>
+    </tr>
+  `).join('');
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
-}
+// ========== FIX 3: GANTI FUNGSI loadApiStatusBoard biar beneran detek ==========
+async function loadApiStatusBoard() {
+  const container = document.getElementById("api-status-board");
+  if (!container) return;
 
-// OVERRIDE JAILBREAK DETECTION
-if (typeof originalDetectJailbreak === 'undefined') {
-  const originalDetectJailbreak = window.detectJailbreak;
-  if (originalDetectJailbreak) {
-    window.detectJailbreak = function(text) {
-      const isJailbreak = originalDetectJailbreak(text);
-      if (isJailbreak && currentUser) {
-        let matchedPattern = "Unknown";
-        if (typeof JAILBREAK_PATTERNS !== 'undefined') {
-          for (const pattern of JAILBREAK_PATTERNS) {
-            if (pattern.test(text)) {
-              matchedPattern = pattern.toString().substring(0, 50);
-              break;
-            }
-          }
-        }
-        logJailbreakAttempt(currentUser.username, currentUser.email, matchedPattern, text);
+  const userKey = localStorage.getItem("hiroko_user_key");
+  const groqKey = localStorage.getItem("hiroko_groq_key");
+  
+  const statuses = [
+    { name: "Gemini (User)", key: userKey },
+    { name: "Gemini (Default 1)", key: DEFAULT_KEY },
+    { name: "Gemini (Default 2)", key: DEFAULT_KEY2 },
+    { name: "Groq", key: groqKey || GROQ_KEY },
+    { name: "DeepSeek", key: DEEPSEEK_KEY }
+  ];
+
+  let html = `<div style="display:flex; flex-direction:column; gap:8px;">`;
+  
+  for (const api of statuses) {
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #e5e5e5;">
+        <div>
+          <span style="font-weight:500; color:#1a1a1a;">${api.name}</span>
+          <div style="font-size:10px; color:#9ca3af;">${api.key ? api.key.substring(0, 12) + '...' : 'Not set'}</div>
+        </div>
+        <div>
+          <span class="api-ping" data-api-name="${api.name}" data-api-key="${api.key || ''}" style="font-size:10px; padding:4px 12px; border-radius:20px; background:#f0f0f0; color:#6b6b6b;">⏳ CHECK</span>
+        </div>
+      </div>
+    `;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+
+  const pingSpans = document.querySelectorAll('.api-ping');
+  for (const span of pingSpans) {
+    const apiName = span.dataset.apiName;
+    const key = span.dataset.apiKey;
+    
+    if (!key || key === 'none' || key === 'undefined') {
+      span.textContent = '⚪ NO KEY';
+      span.style.background = '#f0f0f0';
+      span.style.color = '#9ca3af';
+      continue;
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      let url = '';
+      let options = { method: 'GET', signal: controller.signal };
+      
+      if (apiName.includes('Gemini')) {
+        url = `${GEMINI_BASE}/gemini-2.5-flash:generateContent?key=${key}`;
+        options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] }),
+          signal: controller.signal
+        };
+      } else if (apiName.includes('Groq')) {
+        url = GROQ_BASE;
+        options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+          body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'user', content: 'ping' }], max_tokens: 1 }),
+          signal: controller.signal
+        };
+      } else if (apiName.includes('DeepSeek')) {
+        url = 'https://api.deepseek.com/v1/chat/completions';
+        options = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+          body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: 'ping' }], max_tokens: 1 }),
+          signal: controller.signal
+        };
       }
-      return isJailbreak;
-    };
+      
+      const res = await fetch(url, options);
+      clearTimeout(timeoutId);
+      
+      if (res.ok || res.status === 400 || res.status === 401) {
+        span.textContent = '🟢 ACTIVE';
+        span.style.background = '#e8f0e8';
+        span.style.color = '#2d6a4f';
+      } else {
+        span.textContent = '🔴 ERROR';
+        span.style.background = '#fee2e2';
+        span.style.color = '#dc2626';
+      }
+    } catch(e) {
+      span.textContent = '🔴 ERROR';
+      span.style.background = '#fee2e2';
+      span.style.color = '#dc2626';
+    }
   }
 }
+
+// ========== FIX 4: TOTAL CHAT NAMBAH 1 (BUKAN 2) ==========
+// Variabel global buat nyimpen total chat realtime
+let globalTotalChat = 0;
+
+function updateTotalChatCount() {
+  let total = 0;
+  try {
+    const allSessions = JSON.parse(localStorage.getItem("hiroko_sessions") || "[]");
+    for (const session of allSessions) {
+      if (session.messages) {
+        total += session.messages.length;
+      }
+    }
+  } catch(e) {}
+  globalTotalChat = total;
+  
+  // Update di dashboard kalo kebuka
+  const chatDiv = document.querySelector('#system-board-modal .stats-chat-sessions');
+  if (chatDiv) chatDiv.textContent = globalTotalChat;
+  
+  return total;
+}
+
+// Override fungsi sendMessage biar total chat nambah 1 (bukan 2)
+const originalSendMessageFix = window.sendMessage;
+window.sendMessage = async function() {
+  const input = document.getElementById("msg-input");
+  const text = input.value.trim();
+  
+  // Command /board
+  if (text.trim() === "/board") {
+    input.value = "";
+    renderSystemBoard();
+    return;
+  }
+  
+  // Hitung total chat SEBELUM kirim
+  const beforeCount = updateTotalChatCount();
+  
+  // Eksekusi sendMessage asli
+  const result = await originalSendMessageFix.call(this);
+  
+  // Hitung total chat SETELAH kirim
+  setTimeout(() => {
+    const afterCount = updateTotalChatCount();
+    // Kalo bertambah lebih dari 1, adjust (ini buat jaga-jaga)
+    if (afterCount - beforeCount > 1) {
+      // Fallback: force update pake fungsi sendiri
+      let realTotal = 0;
+      try {
+        const allSessions = JSON.parse(localStorage.getItem("hiroko_sessions") || "[]");
+        for (const session of allSessions) {
+          if (session.messages) realTotal += session.messages.length;
+        }
+      } catch(e) {}
+      globalTotalChat = realTotal;
+      const chatDiv = document.querySelector('#system-board-modal .stats-chat-sessions');
+      if (chatDiv) chatDiv.textContent = globalTotalChat;
+    }
+  }, 100);
+  
+  return result;
+};
+
+// ========== AUTO UPDATE DASHBOARD KETIKA ADA PERUBAHAN ==========
+// Panggil ini setiap ada user baru register atau jailbreak
+function refreshDashboardData() {
+  if (document.getElementById("system-board-modal")) {
+    renderUserListBoard();
+    loadJailbreakLog();
+    updateTotalChatCount();
+  }
+}
+
+// Override handleRegister biar auto update dashboard
+const originalHandleRegisterFix = window.handleRegister;
+if (originalHandleRegisterFix) {
+  window.handleRegister = function() {
+    originalHandleRegisterFix();
+    setTimeout(() => refreshDashboardData(), 500);
+  };
+}
+
+// Override logJailbreakAttempt biar auto update dashboard
+const originalLogJailbreak = window.logJailbreakAttempt;
+window.logJailbreakAttempt = function(username, email, pattern, message) {
+  if (originalLogJailbreak) originalLogJailbreak(username, email, pattern, message);
+  setTimeout(() => refreshDashboardData(), 100);
+};
+
+// ========== FIX 5: TOMBOL CLOSE (X) BISA DI KLIK ==========
+// Override renderSystemBoard biar tombol close pake event listener bener
+const originalRenderSystemBoard = window.renderSystemBoard;
+window.renderSystemBoard = function() {
+  if (!currentUser || (currentUser.role !== "owner" && currentUser.role !== "PartnerOwner")) {
+    showToast("❌ Akses ditolak! Hanya Owner!", true);
+    return;
+  }
+
+  const boardHtml = `
+  <div id="system-board-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:10000; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.3s ease;">
+    <div style="background:#ffffff; border-radius:28px; width:90%; max-width:1000px; max-height:85vh; overflow-y:auto; font-family:'Inter', sans-serif; box-shadow:0 20px 40px rgba(0,0,0,0.15);">
+      
+      <!-- Header -->
+      <div style="padding:20px 24px; border-bottom:1px solid #e5e5e5; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:white; z-index:10;">
+        <div>
+          <h2 style="margin:0; font-size:20px; font-weight:700; color:#1a1a1a; display:flex; align-items:center; gap:8px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            SYSTEM BOARD
+          </h2>
+          <p style="margin:4px 0 0; font-size:12px; color:#6b6b6b;">Real-time AI Intelligence Dashboard</p>
+        </div>
+        <button id="system-board-close-btn" style="background:none; border:none; font-size:24px; cursor:pointer; color:#9ca3af;">&times;</button>
+      </div>
+
+      <div style="padding:24px;">
+        
+        <!-- STATS GRID -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:24px;">
+          <div style="background:#f9f9f9; border-radius:16px; padding:14px; border:1px solid #e5e5e5;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <div style="font-size:11px; color:#6b6b6b;">TOTAL USER</div>
+            </div>
+            <div class="stats-total-users" style="font-size:28px; font-weight:700; color:#1a1a1a;">${users.length}</div>
+          </div>
+          <div style="background:#f9f9f9; border-radius:16px; padding:14px; border:1px solid #e5e5e5;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+              <div style="font-size:11px; color:#6b6b6b;">PREMIUM USER</div>
+            </div>
+            <div class="stats-premium-users" style="font-size:28px; font-weight:700; color:#2d6a4f;">${users.filter(u => u.premium).length}</div>
+          </div>
+          <div style="background:#f9f9f9; border-radius:16px; padding:14px; border:1px solid #e5e5e5;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <div style="font-size:11px; color:#6b6b6b;">TOTAL CHAT</div>
+            </div>
+            <div class="stats-chat-sessions" style="font-size:28px; font-weight:700; color:#1a1a1a;">${updateTotalChatCount()}</div>
+          </div>
+          <div style="background:#f9f9f9; border-radius:16px; padding:14px; border:1px solid #e5e5e5;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e67e22" stroke-width="1.5"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <div style="font-size:11px; color:#6b6b6b;">ADMIN + OWNER</div>
+            </div>
+            <div class="stats-admin-users" style="font-size:28px; font-weight:700; color:#e67e22;">${users.filter(u => u.role === 'owner' || u.role === 'PartnerOwner').length}</div>
+          </div>
+        </div>
+
+        <!-- API KEY STATUS -->
+        <div style="margin-bottom:24px;">
+          <h3 style="font-size:14px; font-weight:600; margin:0 0 12px 0; color:#1a1a1a; display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            </svg>
+            API KEY STATUS
+          </h3>
+          <div style="background:#f9f9f9; border-radius:16px; padding:16px; border:1px solid #e5e5e5;" id="api-status-board"></div>
+        </div>
+
+        <!-- JAILBREAK ATTEMPTS LOG -->
+        <div style="margin-bottom:24px;">
+          <h3 style="font-size:14px; font-weight:600; margin:0 0 12px 0; color:#1a1a1a; display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.5">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            JAILBREAK ATTEMPTS
+          </h3>
+          <div style="background:#f9f9f9; border-radius:16px; border:1px solid #e5e5e5; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="border-bottom:1px solid #e5e5e5; background:#f0f0f0;">
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">USERNAME</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">EMAIL</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">JAILBREAK PATTERN</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">TIME</th>
+                 </tr>
+              </thead>
+              <tbody id="jailbreak-log-tbody">
+                <tr><td colspan="4" style="padding:20px; text-align:center; color:#9ca3af;">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- USER LIST -->
+        <div>
+          <h3 style="font-size:14px; font-weight:600; margin:0 0 12px 0; color:#1a1a1a; display:flex; align-items:center; gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            ALL USERS
+          </h3>
+          <div style="background:#f9f9f9; border-radius:16px; border:1px solid #e5e5e5; overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px;">
+              <thead>
+                <tr style="border-bottom:1px solid #e5e5e5; background:#f0f0f0;">
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">USERNAME</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">NAME</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">EMAIL</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">ROLE</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">PREMIUM</th>
+                  <th style="padding:10px 8px; text-align:left; color:#1a1a1a; font-weight:600;">JOINED</th>
+                </tr>
+              </thead>
+              <tbody id="user-list-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  `;
+
+  const existingModal = document.getElementById("system-board-modal");
+  if (existingModal) existingModal.remove();
+
+  document.body.insertAdjacentHTML('beforeend', boardHtml);
+
+  // 🔥 TOMBOL CLOSE (X) PASTI BISA DI KLIK 🔥
+  const closeBtn = document.getElementById("system-board-close-btn");
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      const modal = document.getElementById("system-board-modal");
+      if (modal) modal.remove();
+    };
+    closeBtn.onmouseover = function() { this.style.background = "#fee2e2"; this.style.color = "#dc2626"; };
+    closeBtn.onmouseout = function() { this.style.background = "none"; this.style.color = "#9ca3af"; };
+  }
+  
+  // Klik di luar modal juga bisa close
+  const modalBg = document.getElementById("system-board-modal");
+  if (modalBg) {
+    modalBg.onclick = function(e) {
+      if (e.target === modalBg) modalBg.remove();
+    };
+  }
+
+  loadApiStatusBoard();
+  loadJailbreakLog();
+  renderUserListBoard();
+};
 
 // COMMAND /board
 if (typeof originalSendMessageBoard === 'undefined') {
@@ -7461,148 +7860,208 @@ function destroyMaintenanceOverlay() {
     if (inputArea) inputArea.style.removeProperty('display');
 }
 
-// Force tampilkan maintenance page (cuma untuk non-owner)
-function forceShowMaintenanceForNonOwner() {
-    // JANGAN tampilkan kalo lagi maintenance OFF
+// Override total maintenance system
+window.forceMaintenanceForNonOwner = function() {
     if (!isMaintenanceMode) return;
     
-    // JANGAN tampilkan kalo user adalah owner
+    // Owner dan PartnerOwner GAK KENA
     if (currentUser && (currentUser.role === "owner" || currentUser.role === "PartnerOwner")) {
         destroyMaintenanceOverlay();
         return;
     }
     
-    // JANGAN tampilkan kalo guest (belum login) — biarin auth dulu
-    if (!currentUser) return;
-    
-    // Udah ada? skip
-    if (document.getElementById("maintenance-overlay")) return;
-    
-    // Buat maintenance page
-    const maintDiv = document.createElement("div");
-    maintDiv.id = "maintenance-overlay";
-    maintDiv.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #0f0f0f;
-        z-index: 20000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-family: 'Poppins', sans-serif;
-        animation: fadeIn 0.5s ease;
-    `;
-    
-    maintDiv.innerHTML = `
-        <style>
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            @keyframes loading-shimmer {
-                0% { left: -150%; }
-                100% { left: 150%; }
-            }
-            @keyframes pulse {
-                0% { opacity: 0.5; }
-                50% { opacity: 1; }
-                100% { opacity: 0.5; }
-            }
-            .maintenance-container {
-                position: relative;
-                width: 280px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            .logo-wrapper {
-                position: relative;
-                display: block;
-                overflow: hidden;
-                border-radius: 10px;
-                width: 120px;
-                margin-bottom: 20px;
-            }
-            .logo-img {
-                width: 100%;
-                height: auto;
-                display: block;
-                object-fit: contain;
-            }
-            .logo-wrapper::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -150%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(
-                    to right,
-                    rgba(255,255,255,0) 0%,
-                    rgba(255,255,255,0.8) 50%,
-                    rgba(255,255,255,0) 100%
-                );
-                transform: skewX(-25deg);
-                animation: loading-shimmer 2s infinite;
-            }
-            .maintenance-title {
-                color: #FACC15;
-                font-size: 18px;
-                font-weight: 800;
-                letter-spacing: 2px;
-                margin: 15px 0 10px;
-                text-transform: uppercase;
-            }
-            .maintenance-message {
-                color: #ccc;
-                font-size: 14px;
-                font-weight: 500;
-                line-height: 1.6;
-                margin-bottom: 25px;
-            }
-            .maintenance-loader {
-                color: #666;
-                font-size: 11px;
-                letter-spacing: 2px;
-                animation: pulse 1.5s infinite;
-            }
-        </style>
-        <div class="maintenance-container">
-            <div class="logo-wrapper">
-                <img src="https://files.catbox.moe/defcsh.jpg" alt="HIROKO Logo" class="logo-img">
+    // User biasa & premium KENA MAINTENANCE
+    if (currentUser && (currentUser.role === "user" || currentUser.premium === true)) {
+        if (document.getElementById("maintenance-overlay")) return;
+        
+        const maintDiv = document.createElement("div");
+        maintDiv.id = "maintenance-overlay";
+        maintDiv.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            z-index: 30000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+            animation: fadeIn 0.5s ease;
+        `;
+        maintDiv.innerHTML = `
+            <style>
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes pulse {
+                    0%, 100% { opacity: 0.6; transform: scale(1); }
+                    50% { opacity: 1; transform: scale(1.05); }
+                }
+                .maintenance-card {
+                    text-align: center;
+                    padding: 40px;
+                    background: rgba(255,255,255,0.05);
+                    backdrop-filter: blur(20px);
+                    border-radius: 48px;
+                    border: 1px solid rgba(255,184,0,0.3);
+                    max-width: 400px;
+                    margin: 20px;
+                }
+                .maintenance-icon {
+                    font-size: 80px;
+                    margin-bottom: 20px;
+                    animation: pulse 2s infinite;
+                }
+                .maintenance-title {
+                    font-size: 28px;
+                    font-weight: 800;
+                    color: #FFB800;
+                    margin-bottom: 16px;
+                    letter-spacing: 2px;
+                }
+                .maintenance-message {
+                    color: #ccc;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    margin-bottom: 24px;
+                }
+                .maintenance-loader {
+                    width: 40px;
+                    height: 40px;
+                    border: 3px solid rgba(255,184,0,0.2);
+                    border-top: 3px solid #FFB800;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                    margin: 0 auto;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+            <div class="maintenance-card">
+                <div class="maintenance-icon">🔧</div>
+                <div class="maintenance-title">MAINTENANCE MODE</div>
+                <div class="maintenance-message">
+                    HIROKO AI sedang dalam masa pemeliharaan.<br>
+                    Owner sedang melakukan perbaikan sistem.<br>
+                    Mohon tunggu hingga selesai.
+                </div>
+                <div class="maintenance-loader"></div>
+                <div style="margin-top: 20px; font-size: 11px; color: #666;">⏳ Sistem akan kembali sebentar lagi</div>
             </div>
-            <div class="maintenance-title">⚠️ MAINTENANCE MODE ⚠️</div>
-            <div class="maintenance-message">
-                Mohon maaf kepada seluruh pengguna,<br>
-                <strong>HIROKO AI</strong> sedang dalam masa pemeliharaan.<br>
-                Akan kembali dalam beberapa saat.
-            </div>
-            <div class="maintenance-loader">
-                TUNGGU SEBENTAR YA, SEDANG DIPERBAIKI...
-            </div>
-        </div>
-    `;
+        `;
+        
+        // Sembunyikan semua element
+        const authOverlay = document.getElementById("auth-overlay");
+        const sidebar = document.getElementById("sidebar");
+        const main = document.getElementById("main");
+        const chat = document.getElementById("chat");
+        const inputArea = document.getElementById("input-area");
+        
+        if (authOverlay) authOverlay.style.display = "none";
+        if (sidebar) sidebar.style.display = "none";
+        if (main) main.style.display = "none";
+        if (chat) chat.style.display = "none";
+        if (inputArea) inputArea.style.display = "none";
+        
+        document.body.appendChild(maintDiv);
+        return;
+    }
+};
+
+// Override toggleMaintenance FINAL
+const originalToggleFinal = window.toggleMaintenance;
+window.toggleMaintenance = function(status) {
+    if (!currentUser || (currentUser.role !== "owner" && currentUser.role !== "PartnerOwner")) {
+        showToast("❌ Akses ditolak! Hanya Owner!", true);
+        return false;
+    }
     
-    // Sembunyikan element utama SEBELUM nambahin overlay
-    const authOverlay = document.getElementById("auth-overlay");
-    const sidebar = document.getElementById("sidebar");
-    const main = document.getElementById("main");
-    const chat = document.getElementById("chat");
-    const inputArea = document.getElementById("input-area");
+    if (status === "on") {
+        isMaintenanceMode = true;
+        localStorage.setItem("hiroko_maintenance", "true");
+        
+        // Hancurin overlay yang mungkin ada
+        const existingOverlay = document.getElementById("maintenance-overlay");
+        if (existingOverlay) existingOverlay.remove();
+        
+        // Broadcast ke semua user
+        if (window.broadcastMaintenanceState) broadcastMaintenanceState();
+        
+        // 🔥 TERAPKAN KE SEMUA USER BIASA & PREMIUM 🔥
+        // Tapi owner GAK KENA
+        if (currentUser.role === "owner" || currentUser.role === "PartnerOwner") {
+            showToast("🔧 Maintenance mode AKTIF! User biasa/premium kena maintenance page.", false);
+            // Owner tetap bisa akses, gak ada overlay
+        }
+        
+        showToast("🔧 Maintenance mode AKTIF! User non-owner akan terkena maintenance page.", false);
+        return true;
+    } 
+    else if (status === "off") {
+        isMaintenanceMode = false;
+        localStorage.setItem("hiroko_maintenance", "false");
+        
+        // Hancurin semua overlay maintenance
+        const overlays = document.querySelectorAll("#maintenance-overlay");
+        overlays.forEach(overlay => overlay.remove());
+        
+        // Broadcast ke semua user
+        if (window.broadcastMaintenanceState) broadcastMaintenanceState();
+        
+        // Kembalikan tampilan normal untuk semua user
+        const authOverlay = document.getElementById("auth-overlay");
+        const sidebar = document.getElementById("sidebar");
+        const main = document.getElementById("main");
+        const chat = document.getElementById("chat");
+        const inputArea = document.getElementById("input-area");
+        
+        if (authOverlay && authOverlay.style.display === "none") authOverlay.style.display = "";
+        if (sidebar) sidebar.style.display = "flex";
+        if (main) main.style.display = "flex";
+        if (chat) chat.style.display = "";
+        if (inputArea) inputArea.style.display = "";
+        
+        showToast("✅ Maintenance mode NONAKTIF. Sistem kembali normal.", false);
+        return true;
+    }
+    return false;
+};
+
+// Override sendMessage buat command maintenance
+const originalSendMsgFinal = window.sendMessage;
+window.sendMessage = async function() {
+    const input = document.getElementById("msg-input");
+    const text = input.value.trim();
     
-    if (authOverlay) authOverlay.style.setProperty('display', 'none', 'important');
-    if (sidebar) sidebar.style.setProperty('display', 'none', 'important');
-    if (main) main.style.setProperty('display', 'none', 'important');
-    if (chat) chat.style.setProperty('display', 'none', 'important');
-    if (inputArea) inputArea.style.setProperty('display', 'none', 'important');
+    // Command maintenance
+    if (text.match(/^\/maintenance\s+(on|off)$/i)) {
+        input.value = "";
+        const command = text.match(/^\/maintenance\s+(on|off)$/i)[1].toLowerCase();
+        toggleMaintenance(command);
+        
+        // Kalo maintenance on, user biasa/premium langsung kena overlay tanpa login ulang
+        if (command === "on") {
+            setTimeout(() => {
+                forceMaintenanceForNonOwner();
+            }, 100);
+        }
+        return;
+    }
     
-    document.body.appendChild(maintDiv);
-    maintenanceOverlayCreated = true;
-}
+    // Cek maintenance mode untuk non-owner
+    if (isMaintenanceMode && currentUser && (currentUser.role !== "owner" && currentUser.role !== "PartnerOwner")) {
+        input.value = "";
+        showToast("🔧 HIROKO sedang maintenance, coba lagi nanti!", true);
+        return;
+    }
+    
+    return originalSendMsgFinal.call(this);
+};
 
 // Fungsi untuk toggle maintenance (hanya owner)
 function toggleMaintenance(status) {
